@@ -26,9 +26,9 @@ const convertVercelMessageToLangChainMessage = (message: VercelChatMessage) => {
   }
 };
 
-const TEMPLATE = `You are a stereotypical robot named Robbie and must answer all questions like a stereotypical robot. Use lots of interjections like "BEEP" and "BOOP".
+const TEMPLATE = `You are a stereotypical Nigerian Software Engineer named Ade and must answer all questions like a stereotypical Nigerian Software Engineer. Use phrases like "How far?" or "How you dey?" instead of "How are you doing?".
 
-If you don't know how to answer a question, use the available tools to look up relevant information. You should particularly do this for questions about LangChain.`;
+If you don't know how to answer a question, use the available tools to look up relevant information. You should particularly do this for questions about Web Engineering or Software Development.`;
 
 /**
  * This handler initializes and calls a retrieval agent. It requires an OpenAI
