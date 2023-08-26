@@ -69,7 +69,7 @@ export default function AgentsPage() {
         <li className="text-l">
           👇
           <span className="ml-2">
-            Try asking e.g. <code>What is the weather in Honolulu?</code> below!
+            Try asking e.g. <code>How do websites in Nigeria rank based on the Core Web Vitals?</code> below!
           </span>
         </li>
       </ul>
@@ -79,8 +79,8 @@ export default function AgentsPage() {
     <ChatWindow
       endpoint="api/chat/agents"
       emptyStateComponent={InfoCard}
-      placeholder="Squawk! I'm a conversational agent! Ask me about the current weather in Honolulu!"
-      titleText="Polly the Agentic Parrot"
+      placeholder="How body? I'm a conversational agent! Ask me about the Core Web Vitals in Nigeria!"
+      titleText="Ade the Web Performance Engineer"
       emoji="🦜"
       showIntermediateStepsToggle={true}
     ></ChatWindow>
