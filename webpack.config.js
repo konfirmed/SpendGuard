@@ -1,4 +1,9 @@
 const path = require('path');
+const webpack = require('webpack');
+const dotenv = require('dotenv');
+
+// Load environment variables from .env or .env.local
+const env = dotenv.config({ path: '.env.local' }).parsed || dotenv.config().parsed || {};
 
 module.exports = {
   entry: {
@@ -41,5 +46,9 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
-  mode: 'development'
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  devtool: process.env.NODE_ENV === 'production' ? false : 'inline-source-map',
+  plugins: [
+    // No DefinePlugin for secrets in client bundle
+  ]
 };

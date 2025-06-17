@@ -76,7 +76,7 @@ const CHECKOUT_DETECTORS: CheckoutDetector[] = [
 
 class CheckoutInterceptor {
   private observer: MutationObserver | null = null;
-  private interceptedButtons = new Set<Element>();
+  private interceptedListeners = new Map<Element, EventListener>();
   private cooldownContainer: HTMLElement | null = null;
 
   init() {
@@ -130,63 +130,27 @@ class CheckoutInterceptor {
   private async interceptCheckoutButtons(detector: CheckoutDetector) {
     const buttons = detector.getCheckoutButtons();
     const settings = await getSettings();
-    
     buttons.forEach((button) => {
-      if (!this.interceptedButtons.has(button)) {
-        this.interceptedButtons.add(button);
-        this.addInterception(button as HTMLElement, settings.cooldownSeconds);
+      if (!this.interceptedListeners.has(button)) {
+        this.addInterception(button as HTMLElement, settings);
       }
     });
   }
 
-  private addInterception(button: HTMLElement, cooldownSeconds: number) {
-    const originalClickHandler = button.onclick;
-    const originalSubmitHandler = (button as any).onsubmit;
-    
-    // Store original handlers
-    button.onclick = null;
-    (button as any).onsubmit = null;
-    
-    // Add our intercept logic
+  private addInterception(button: HTMLElement, settings: { cooldownSeconds: number }) {
+    // Create our interception listener and store it
     const interceptClick = async (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
-      
       await incrementIntercepts();
-      
-      // Log the purchase attempt
-      await addPurchase({
-        url: window.location.href,
-        timestamp: Date.now(),
-        intercepted: true,
-        proceeded: false
-      });
-      
-      this.showCooldown(cooldownSeconds, () => {
-        // User completed cooldown
-        this.proceedWithOriginalAction(button, originalClickHandler, originalSubmitHandler);
-      }, () => {
-        // User skipped cooldown
-        this.proceedWithOriginalAction(button, originalClickHandler, originalSubmitHandler);
-      });
+      await addPurchase({ url: window.location.href, timestamp: Date.now(), intercepted: true, proceeded: false });
+      this.showCooldown(settings.cooldownSeconds, () => this.proceedWithOriginalAction(button), () => this.proceedWithOriginalAction(button));
     };
-    
+    this.interceptedListeners.set(button, interceptClick);
     button.addEventListener('click', interceptClick, true);
-    
-    // Also intercept form submissions if it's a submit button
-    if ((button as HTMLInputElement).type === 'submit' || (button as HTMLButtonElement).type === 'submit') {
-      const form = button.closest('form');
-      if (form) {
-        form.addEventListener('submit', interceptClick, true);
-      }
-    }
   }
 
-  private proceedWithOriginalAction(
-    button: HTMLElement, 
-    originalClickHandler: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null,
-    originalSubmitHandler: any
-  ) {
+  private proceedWithOriginalAction(button: HTMLElement) {
     // Log that user proceeded
     addPurchase({
       url: window.location.href,
@@ -194,25 +158,15 @@ class CheckoutInterceptor {
       intercepted: true,
       proceeded: true
     });
-
-    // Remove our intercept and restore original behavior
-    this.interceptedButtons.delete(button);
-    
-    if (originalClickHandler) {
-      button.onclick = originalClickHandler;
-      button.click();
-    } else if (originalSubmitHandler) {
-      (button as any).onsubmit = originalSubmitHandler;
-      button.click();
-    } else {
-      // Simulate the original click
-      const event = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
-      button.dispatchEvent(event);
+    // Remove our listener
+    const listener = this.interceptedListeners.get(button);
+    if (listener) {
+      button.removeEventListener('click', listener, true);
+      this.interceptedListeners.delete(button);
     }
+    // Dispatch a native click event so default behavior and other handlers run
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+    button.dispatchEvent(event);
   }
 
   private showCooldown(
@@ -272,9 +226,12 @@ class CheckoutInterceptor {
   }
 
   destroy() {
-    if (this.observer) {
-      this.observer.disconnect();
-    }
+    // Remove all interception listeners
+    this.interceptedListeners.forEach((listener, button) => {
+      button.removeEventListener('click', listener, true);
+    });
+    this.interceptedListeners.clear();
+    if (this.observer) this.observer.disconnect();
     this.removeCooldown();
   }
 }

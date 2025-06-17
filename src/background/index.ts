@@ -1,60 +1,57 @@
-/**
- * Background service worker for WebAssistant
- * Handles extension lifecycle and cross-tab communication
- */
+// src/background/index.ts
 
-// Initialize extension
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('WebAssistant extension installed');
-  
-  // Set default storage values
-  chrome.storage.local.set({
-    purchases: [],
-    totalIntercepts: 0,
-    settings: {
-      cooldownSeconds: 30,
-      enableNudges: true,
-      enableScamDetection: true,
-    }
+const STORAGE_KEY_PURCHASES = 'purchases';
+const STORAGE_KEY_INTERCEPTS = 'totalIntercepts';
+
+/**
+ * Async wrapper around chrome.storage.local.get
+ */
+async function getStorage<T>(key: string): Promise<T | undefined> {
+  const result = await chrome.storage.local.get(key);
+  return result[key] as T;
+}
+
+/**
+ * Async wrapper around chrome.storage.local.set
+ */
+async function setStorage<T>(key: string, value: T): Promise<void> {
+  await chrome.storage.local.set({ [key]: value });
+}
+
+// On install, initialize our storage keys
+chrome.runtime.onInstalled.addListener(async () => {
+  console.log('WebAssistant installed – initializing storage');
+  await setStorage(STORAGE_KEY_PURCHASES, []);
+  await setStorage(STORAGE_KEY_INTERCEPTS, 0);
+  await setStorage('settings', {
+    cooldownSeconds: 30,
+    enableNudges: true,
+    enableScamDetection: true,
   });
 });
 
 // Handle messages from content scripts
-chrome.runtime.onMessage.addListener((request: any, sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) => {
-  if (request.action === 'incrementIntercepts') {
-    chrome.storage.local.get(['totalIntercepts'], (result: { totalIntercepts?: number }) => {
-      const newCount = (result.totalIntercepts || 0) + 1;
-      chrome.storage.local.set({ totalIntercepts: newCount });
-      sendResponse({ success: true, newCount });
-    });
-    return true; // Indicates we will send a response asynchronously
-  }
-  
-  if (request.action === 'addPurchase') {
-    chrome.storage.local.get(['purchases'], (result: { purchases?: any[] }) => {
-      const purchases = result.purchases || [];
-      const newPurchase = {
-        ...request.purchase,
-        id: Date.now().toString(),
-      };
-      
-      purchases.unshift(newPurchase);
-      
-      // Keep only last 100 entries
-      if (purchases.length > 100) {
-        purchases.splice(100);
-      }
-      
-      chrome.storage.local.set({ purchases });
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  (async () => {
+    if (message.action === 'incrementIntercepts') {
+      const current = (await getStorage<number>(STORAGE_KEY_INTERCEPTS)) || 0;
+      const updated = current + 1;
+      await setStorage(STORAGE_KEY_INTERCEPTS, updated);
+      sendResponse({ success: true, newCount: updated });
+    }
+
+    if (message.action === 'addPurchase') {
+      const list = (await getStorage<any[]>(STORAGE_KEY_PURCHASES)) || [];
+      list.unshift({ ...message.purchase, id: Date.now().toString() });
+      if (list.length > 100) list.splice(100);
+      await setStorage(STORAGE_KEY_PURCHASES, list);
       sendResponse({ success: true });
-    });
-    return true;
-  }
-});
+    }
+  })().catch(err => {
+    console.error('WebAssistant background error:', err);
+    sendResponse({ success: false, error: err.message });
+  });
 
-// Handle extension updates
-chrome.runtime.onUpdateAvailable.addListener(() => {
-  console.log('WebAssistant update available');
+  // Return true to keep the message channel open for async response
+  return true;
 });
-
-export {};
