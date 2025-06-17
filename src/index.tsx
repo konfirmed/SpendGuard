@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Popup from './popup/Popup';
 import './popup/Popup.css';
+import '../styles/tailwind.css';
 
 /**
  * Entry point for WebAssistant popup UI
