@@ -174,7 +174,7 @@ class CheckoutInterceptor {
     button.addEventListener('click', interceptClick, true);
     
     // Also intercept form submissions if it's a submit button
-    if (button.type === 'submit') {
+    if ((button as HTMLInputElement).type === 'submit' || (button as HTMLButtonElement).type === 'submit') {
       const form = button.closest('form');
       if (form) {
         form.addEventListener('submit', interceptClick, true);
