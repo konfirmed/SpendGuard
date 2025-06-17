@@ -21,7 +21,6 @@
 - **Styling**: Tailwind CSS, Shadow DOM
 - **AI Layer**: OpenAI GPT-4-turbo (decision reasoning, nudges)
 - **Storage**: IndexedDB / Chrome Storage API (local-first)
-- **Optional Backend**: Supabase (purchase logs, auth)
 - **Data Sources**: CamelCamelCamel, Yahoo Finance, TrustPilot, Google Safe Browsing
 
 ---
