@@ -120,7 +120,7 @@ class CheckoutInterceptor {
   private async checkCurrentPage() {
     for (const detector of CHECKOUT_DETECTORS) {
       if (detector.detect()) {
-        console.log(`WebAssistant: Detected ${detector.name} checkout page`);
+        console.log(`SpendGuard: Detected ${detector.name} checkout page`);
         await this.interceptCheckoutButtons(detector);
         break;
       }
@@ -176,7 +176,7 @@ class CheckoutInterceptor {
   ) {
     // Create container for React component
     this.cooldownContainer = document.createElement('div');
-    this.cooldownContainer.id = 'webassistant-cooldown';
+    this.cooldownContainer.id = 'spendguard-cooldown';
     this.cooldownContainer.style.cssText = `
       position: fixed;
       top: 0;

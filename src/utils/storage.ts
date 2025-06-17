@@ -1,5 +1,5 @@
 /**
- * Chrome Storage API utilities for WebAssistant
+ * Chrome Storage API utilities for SpendGuard
  * Provides type-safe wrapper functions for chrome.storage.local
  */
 

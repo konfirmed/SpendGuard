@@ -1,5 +1,5 @@
 {
-  "name": "webassistant",
+  "name": "spendguard",
   "version": "1.0.0",
   "description": "AI-powered browser companion for smarter online decisions",
   "scripts": {
@@ -7,7 +7,7 @@
     "build": "webpack --mode production",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf public/*.js public/*.js.map public/*.LICENSE.txt",
-    "package": "npm run build && zip -r webassistant.zip public/ -x '*.map'"
+    "package": "npm run build && zip -r spendguard.zip public/ -x '*.map'"
   },
   "dependencies": {
     "react": "^18.2.0",

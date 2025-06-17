@@ -1,6 +1,7 @@
 /**
  * Chrome AI client for generating personalized purchase nudges
  * Uses Chrome's inbuilt AI (if available), falls back to generic nudges
+ * SpendGuard Edition
  */
 
 interface PurchaseContext {
@@ -31,7 +32,7 @@ export async function getGPTNudge(purchaseContext: string | PurchaseContext): Pr
         return summary.trim();
       }
     } catch (err) {
-      console.warn('WebAssistant: Chrome AI summarize failed', err);
+      console.warn('SpendGuard: Chrome AI summarize failed', err);
     }
   }
   // Fallback: generic nudge
@@ -80,7 +81,7 @@ export async function getPurchaseInsight(url: string, price?: number): Promise<s
         return summary.trim();
       }
     } catch (err) {
-      console.warn('WebAssistant: Chrome AI summarize failed', err);
+      console.warn('SpendGuard: Chrome AI summarize failed', err);
     }
   }
   return "Consider if this purchase aligns with your financial goals and current needs.";

@@ -3,7 +3,7 @@ import { getTotalIntercepts, getPurchases, getSettings, updateSettings } from '.
 import type { PurchaseEntry } from '../utils/storage';
 
 /**
- * Main popup component for WebAssistant
+ * Main popup component for SpendGuard
  * Shows intercept stats, recent purchases, and settings
  */
 const Popup: React.FC = () => {
@@ -88,7 +88,7 @@ const Popup: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="font-bold text-lg">WebAssistant</h1>
+            <h1 className="font-bold text-lg">SpendGuard</h1>
             <p className="text-sm opacity-90">Your spending companion</p>
           </div>
         </div>
@@ -149,7 +149,7 @@ const Popup: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                   </svg>
                   <p className="text-sm">No purchase activity yet</p>
-                  <p className="text-xs text-gray-400 mt-1">WebAssistant will track your checkout interactions</p>
+                  <p className="text-xs text-gray-400 mt-1">SpendGuard will track your checkout interactions</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -259,7 +259,7 @@ const Popup: React.FC = () => {
             {/* About */}
             <div className="pt-4 border-t border-gray-200">
               <div className="text-center text-xs text-gray-500 space-y-1">
-                <p>WebAssistant v1.0.0</p>
+                <p>SpendGuard v1.0.0</p>
                 <p>Built to help you make smarter purchase decisions</p>
               </div>
             </div>

@@ -1,11 +1,11 @@
-# WebAssistant Installation Guide
+# SpendGuard Installation Guide
 
 ## Quick Setup (5 minutes)
 
 ### 1. Download or Clone
 ```bash
 git clone <your-repo-url>
-cd webassistant
+cd spendguard
 ```
 
 ### 2. Install & Build
@@ -19,12 +19,12 @@ npm run build
 2. Toggle "Developer mode" ON (top-right corner)
 3. Click "Load unpacked"
 4. Select the `public` folder from this project
-5. You should see the WebAssistant icon in your toolbar!
+5. You should see the SpendGuard icon in your toolbar!
 
 ### 4. Test It Out
 1. Visit any Stripe demo checkout page
 2. Try to click the "Pay" button
-3. WebAssistant should show a cooldown timer
+3. SpendGuard should show a cooldown timer
 4. Click the extension icon to see your stats
 
 ## Optional: AI Features
@@ -49,8 +49,8 @@ If you want AI-powered purchase nudges:
 
 **Need to update?**
 - Run `npm run build` after making changes
-- Click the refresh icon next to WebAssistant in `chrome://extensions/`
+- Click the refresh icon next to SpendGuard in `chrome://extensions/`
 
 ---
 
-🎉 You're all set! WebAssistant will now help you make more thoughtful purchase decisions.
+🎉 You're all set! SpendGuard will now help you make more thoughtful purchase decisions.

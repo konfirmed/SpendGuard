@@ -1,12 +1,1 @@
-/* WebAssistant Popup fallback styles */
-body {
-  background: #f9fafb;
-  color: #222;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-#root {
-  min-width: 350px;
-  min-height: 400px;
-}
+/* File removed: not needed, all styling is handled by Tailwind CSS */

@@ -20,7 +20,7 @@ async function setStorage<T>(key: string, value: T): Promise<void> {
 
 // On install, initialize our storage keys
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log('WebAssistant installed – initializing storage');
+  console.log('SpendGuard installed – initializing storage');
   await setStorage(STORAGE_KEY_PURCHASES, []);
   await setStorage(STORAGE_KEY_INTERCEPTS, 0);
   await setStorage('settings', {
@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true });
     }
   })().catch(err => {
-    console.error('WebAssistant background error:', err);
+    console.error('SpendGuard background error:', err);
     sendResponse({ success: false, error: err.message });
   });
 

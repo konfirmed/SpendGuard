@@ -112,7 +112,7 @@ const CooldownTimer: React.FC<CooldownTimerProps> = ({ seconds, onComplete, onSk
 
         {/* Small print */}
         <p className="text-xs text-gray-400">
-          This pause is brought to you by WebAssistant
+          This pause is brought to you by SpendGuard
         </p>
       </div>
     </div>

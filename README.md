@@ -1,6 +1,6 @@
-# WebAssistant 🧠🧾
+# SpendGuard 🛡️🧾
 
-**WebAssistant** is a browser-based AI companion that helps you make smarter, more intentional decisions online—especially around spending. It sits quietly in your browser and intervenes at the point of decision, helping reduce regret, impulse buys, and poor financial timing.
+**SpendGuard** is a browser-based AI companion that helps you make smarter, more intentional decisions online—especially around spending. It sits quietly in your browser and intervenes at the point of decision, helping reduce regret, impulse buys, and poor financial timing.
 
 ---
 
@@ -38,7 +38,7 @@
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd webassistant
+   cd spendguard
    ```
 
 2. **Install dependencies**
@@ -61,7 +61,7 @@
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" (toggle in top right)
    - Click "Load unpacked" and select the `public` folder
-   - The WebAssistant icon should appear in your extensions toolbar
+   - The SpendGuard icon should appear in your extensions toolbar
 
 ### Development
 
@@ -143,7 +143,7 @@ src/
 
 > “We don’t need more dashboards. We need intelligent friction at the moment of choice.”
 
-WebAssistant doesn't block you. It helps you reflect, pause, and proceed with clarity—acting as a trusted guide for your browser life.
+SpendGuard doesn't block you. It helps you reflect, pause, and proceed with clarity—acting as a trusted guide for your browser life.
 
 ---
 
@@ -173,7 +173,7 @@ WebAssistant doesn't block you. It helps you reflect, pause, and proceed with cl
 ## 🛡️ Privacy & Security
 
 - **Local-first**: All data stored locally in Chrome storage
-- **No tracking**: WebAssistant doesn't track your browsing
+- **No tracking**: SpendGuard doesn't track your browsing
 - **Optional AI**: GPT features require explicit API key configuration
 - **Open source**: Full transparency in code and data handling
 
@@ -201,8 +201,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Chrome Extensions team for Manifest V3
 - React and TypeScript communities
 - Tailwind CSS for beautiful styling
-- [ ] Pro tier paywall
-- [ ] Public launch + waitlist
+
 
 ---
 

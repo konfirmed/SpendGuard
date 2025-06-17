@@ -5,7 +5,7 @@ import './popup/Popup.css';
 import '../styles/tailwind.css';
 
 /**
- * Entry point for WebAssistant popup UI
+ * Entry point for SpendGuard popup UI
  * Renders the main Popup component into the DOM
  */
 
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('root');
   
   if (!container) {
-    console.error('WebAssistant: Root element not found');
+    console.error('SpendGuard: Root element not found');
     return;
   }
 
@@ -29,9 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle any unhandled errors
 window.addEventListener('error', (event) => {
-  console.error('WebAssistant popup error:', event.error);
+  console.error('SpendGuard popup error:', event.error);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('WebAssistant popup unhandled promise rejection:', event.reason);
+  console.error('SpendGuard popup unhandled promise rejection:', event.reason);
 });

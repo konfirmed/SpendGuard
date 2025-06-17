@@ -1,8 +1,8 @@
-# WebAssistant - Build Summary
+# SpendGuard - Build Summary
 
 ## 🎉 Completed Implementation
 
-Your WebAssistant Chrome extension is now **fully functional** and ready to use! Here's what we've built:
+Your SpendGuard Chrome extension is now **fully functional** and ready to use! Here's what we've built:
 
 ### ✅ Core Files Implemented
 
@@ -65,7 +65,7 @@ npm run build
 Then load `public/` folder in Chrome Extensions (Developer Mode).
 
 ### Testing
-Visit any checkout page (Stripe demo, Amazon, etc.) and try to complete purchase - WebAssistant will intercept with a thoughtful cooldown!
+Visit any checkout page (Stripe demo, Amazon, etc.) and try to complete purchase - SpendGuard will intercept with a thoughtful cooldown!
 
 ### Customization
 - Adjust cooldown duration in extension popup
@@ -95,7 +95,7 @@ Visit any checkout page (Stripe demo, Amazon, etc.) and try to complete purchase
 ## 📦 Distribution Ready
 
 The extension is **Chrome Web Store ready**:
-- Run `npm run package` to create `webassistant.zip`
+- Run `npm run package` to create `spendguard.zip`
 - All required assets included
 - Proper icons and metadata
 - Clean, production-optimized build
