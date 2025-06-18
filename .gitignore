@@ -15,6 +15,11 @@
 # production
 /build
 
+# Build outputs - extension artifacts
+public/*.js
+public/*.js.map
+public/*.LICENSE.txt
+
 # misc
 .DS_Store
 *.pem
@@ -34,5 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Bundle analyzer output
+stats.json
 
 .yarn
