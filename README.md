@@ -153,7 +153,6 @@ SpendGuard doesn't block you. It helps you reflect, pause, and proceed with clar
 - [x] Smart intercept engine  
 - [x] Purchase tracking and statistics
 - [x] Configurable cooldown timers
-- [x] Modern React + TypeScript architecture
 
 ### Phase 2: Enhanced Intelligence 🚧
 - [ ] Advanced scam detection

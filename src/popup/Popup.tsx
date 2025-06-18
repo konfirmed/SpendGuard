@@ -1,6 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getTotalIntercepts, getPurchases, getSettings, updateSettings } from '../utils/storage';
 import type { PurchaseEntry } from '../utils/storage';
+
+interface LoadingState {
+  isLoading: boolean;
+  error: string | null;
+}
+
+interface SettingsState {
+  cooldownSeconds: number;
+  enableNudges: boolean;
+  enableScamDetection: boolean;
+}
 
 /**
  * Main popup component for SpendGuard
@@ -9,70 +20,114 @@ import type { PurchaseEntry } from '../utils/storage';
 const Popup: React.FC = () => {
   const [totalIntercepts, setTotalIntercepts] = useState<number>(0);
   const [recentPurchases, setRecentPurchases] = useState<PurchaseEntry[]>([]);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SettingsState>({
     cooldownSeconds: 30,
     enableNudges: true,
     enableScamDetection: true,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadingState, setLoadingState] = useState<LoadingState>({
+    isLoading: true,
+    error: null
+  });
   const [activeTab, setActiveTab] = useState<'stats' | 'settings'>('stats');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
+      setLoadingState({ isLoading: true, error: null });
+      
       const [intercepts, purchases, userSettings] = await Promise.all([
-        getTotalIntercepts(),
-        getPurchases(),
-        getSettings(),
+        getTotalIntercepts().catch(() => 0),
+        getPurchases().catch(() => []),
+        getSettings().catch(() => ({
+          cooldownSeconds: 30,
+          enableNudges: true,
+          enableScamDetection: true,
+        })),
       ]);
 
       setTotalIntercepts(intercepts);
       setRecentPurchases(purchases.slice(0, 5)); // Last 5 purchases
       setSettings(userSettings);
+      setLoadingState({ isLoading: false, error: null });
     } catch (error) {
       console.error('Error loading popup data:', error);
-    } finally {
-      setIsLoading(false);
+      setLoadingState({ 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Failed to load data'
+      });
     }
-  };
+  }, []);
 
-  const handleSettingChange = async (key: keyof typeof settings, value: any) => {
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    await updateSettings(newSettings);
-  };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  const getThisWeekIntercepts = () => {
+  const handleSettingChange = useCallback(async (key: keyof SettingsState, value: any) => {
+    try {
+      const newSettings = { ...settings, [key]: value };
+      setSettings(newSettings);
+      await updateSettings(newSettings);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      // Revert on error
+      loadData();
+    }
+  }, [settings, loadData]);
+
+  const getThisWeekIntercepts = useCallback(() => {
     const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     return recentPurchases.filter(p => p.timestamp > weekAgo && p.intercepted).length;
-  };
+  }, [recentPurchases]);
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
-    if (diffHours < 48) return 'Yesterday';
-    return date.toLocaleDateString();
-  };
+  const formatDate = useCallback((timestamp: number) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+      
+      if (diffHours < 1) return 'Just now';
+      if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
+      if (diffHours < 48) return 'Yesterday';
+      return date.toLocaleDateString();
+    } catch (error) {
+      return 'Unknown';
+    }
+  }, []);
 
-  const getDomainFromUrl = (url: string) => {
+  const getDomainFromUrl = useCallback((url: string) => {
     try {
       return new URL(url).hostname.replace('www.', '');
     } catch {
-      return url;
+      return url || 'Unknown site';
     }
-  };
+  }, []);
 
-  if (isLoading) {
+  if (loadingState.isLoading) {
     return (
-      <div className="w-80 h-96 flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="w-80 h-96 flex flex-col items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-sm text-gray-600">Loading SpendGuard...</p>
+      </div>
+    );
+  }
+
+  if (loadingState.error) {
+    return (
+      <div className="w-80 h-96 flex flex-col items-center justify-center bg-red-50 p-4">
+        <div className="text-red-600 mb-4">
+          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Data</h3>
+        <p className="text-sm text-red-600 text-center mb-4">{loadingState.error}</p>
+        <button
+          onClick={loadData}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+          type="button"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
