@@ -1,30 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+
+interface PurchaseContext {
+  productName?: string;
+  price?: number;
+  priceText?: string;
+  currency?: string;
+  category?: string;
+  platform?: string;
+  priceLevel?: 'low' | 'medium' | 'high' | 'very-high';
+}
 
 interface CooldownTimerProps {
   seconds: number;
   onComplete: () => void;
   onSkip: () => void;
+  className?: string;
+  purchaseContext?: PurchaseContext;
 }
 
 /**
  * Full-screen modal cooldown timer component
  * Provides a thoughtful pause before purchase decisions
  */
-const CooldownTimer: React.FC<CooldownTimerProps> = ({ seconds, onComplete, onSkip }) => {
-  const [timeLeft, setTimeLeft] = useState(seconds);
+const CooldownTimer: React.FC<CooldownTimerProps> = ({ 
+  seconds, 
+  onComplete, 
+  onSkip, 
+  className = '',
+  purchaseContext
+}) => {
+  const [timeLeft, setTimeLeft] = useState(Math.max(1, seconds || 30));
   const [canSkip, setCanSkip] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const handleComplete = useCallback(() => {
+    setIsVisible(false);
+    setTimeout(() => onComplete(), 300); // Allow fade out animation
+  }, [onComplete]);
+
+  const handleSkip = useCallback(() => {
+    setIsVisible(false);
+    setTimeout(() => onSkip(), 300); // Allow fade out animation
+  }, [onSkip]);
 
   useEffect(() => {
+    if (timeLeft <= 0) return;
+
     // Allow skipping after 5 seconds minimum
     const skipTimer = setTimeout(() => {
       setCanSkip(true);
-    }, Math.min(5000, seconds * 1000));
+    }, Math.min(5000, timeLeft * 1000));
 
     const countdown = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(countdown);
-          onComplete();
+          handleComplete();
           return 0;
         }
         return prev - 1;
@@ -35,22 +66,25 @@ const CooldownTimer: React.FC<CooldownTimerProps> = ({ seconds, onComplete, onSk
       clearTimeout(skipTimer);
       clearInterval(countdown);
     };
-  }, [seconds, onComplete]);
+  }, [timeLeft, handleComplete]);
 
   const formatTime = (time: number): string => {
+    if (time <= 0) return '0:00';
     const minutes = Math.floor(time / 60);
     const secs = time % 60;
     return minutes > 0 ? `${minutes}:${secs.toString().padStart(2, '0')}` : secs.toString();
   };
 
-  const progressPercentage = ((seconds - timeLeft) / seconds) * 100;
+  const progressPercentage = Math.min(100, Math.max(0, ((seconds - timeLeft) / seconds) * 100));
+
+  if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 font-sans">
-      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-center space-y-6">
+    <div className={`fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 font-sans z-50 transition-opacity duration-300 ${className}`}>
+      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-center space-y-6 transform transition-transform duration-300 scale-100">
         {/* Icon */}
         <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-          <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
@@ -67,18 +101,65 @@ const CooldownTimer: React.FC<CooldownTimerProps> = ({ seconds, onComplete, onSk
 
         {/* Timer Display */}
         <div className="space-y-4">
-          <div className="text-6xl font-mono font-bold text-blue-600">
+          <div className="text-6xl font-mono font-bold text-blue-600" aria-live="polite">
             {formatTime(timeLeft)}
           </div>
           
           {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div 
-              className="bg-blue-600 h-3 rounded-full transition-all duration-1000 ease-linear"
+              className="bg-blue-600 h-full rounded-full transition-all duration-1000 ease-linear"
+              role="progressbar"
+              aria-label="Cooldown progress"
+              aria-valuenow={Math.round(progressPercentage)}
+              aria-valuemin={0}
+              aria-valuemax={100}
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
+
+        {/* Purchase Context (if available) */}
+        {purchaseContext && (
+          <div className="text-left space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <p className="text-sm font-medium text-blue-700">Purchase Details:</p>
+            
+            {purchaseContext.productName && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Item:</span> {purchaseContext.productName}
+              </div>
+            )}
+            
+            {purchaseContext.price && (
+              <div className="text-sm text-gray-700 flex items-center justify-between">
+                <span className="font-medium">Price:</span>
+                <span className={`font-bold ${
+                  purchaseContext.priceLevel === 'very-high' ? 'text-red-600' :
+                  purchaseContext.priceLevel === 'high' ? 'text-orange-600' :
+                  purchaseContext.priceLevel === 'medium' ? 'text-yellow-600' :
+                  'text-green-600'
+                }`}>
+                  {purchaseContext.priceText || `${purchaseContext.currency || '$'}${purchaseContext.price}`}
+                  {purchaseContext.priceLevel === 'very-high' && ' 🔥'}
+                  {purchaseContext.priceLevel === 'high' && ' ⚠️'}
+                </span>
+              </div>
+            )}
+            
+            {purchaseContext.category && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Category:</span> 
+                <span className="capitalize ml-1">{purchaseContext.category}</span>
+              </div>
+            )}
+            
+            {purchaseContext.platform && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Platform:</span> {purchaseContext.platform}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Reflection Questions */}
         <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg">
@@ -95,16 +176,21 @@ const CooldownTimer: React.FC<CooldownTimerProps> = ({ seconds, onComplete, onSk
         <div className="space-y-3">
           {canSkip && (
             <button
-              onClick={onSkip}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
+              onClick={handleSkip}
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+              type="button"
             >
               Proceed Anyway
             </button>
           )}
           
           <button
-            onClick={() => window.history.back()}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+            onClick={() => {
+              setIsVisible(false);
+              setTimeout(() => window.history.back(), 300);
+            }}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+            type="button"
           >
             Take More Time to Decide
           </button>

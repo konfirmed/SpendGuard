@@ -23,10 +23,30 @@ export interface StorageData {
   };
 }
 
+const DEFAULT_SETTINGS: StorageData['settings'] = {
+  cooldownSeconds: 30,
+  enableNudges: true,
+  enableScamDetection: true,
+};
+
+/**
+ * Check if chrome.storage is available
+ */
+function isStorageAvailable(): boolean {
+  return typeof chrome !== 'undefined' && 
+         chrome.storage !== undefined && 
+         chrome.storage.local !== undefined;
+}
+
 /**
  * Get an item from Chrome storage
  */
 export async function getItem<T>(key: string): Promise<T | null> {
+  if (!isStorageAvailable()) {
+    console.warn('Chrome storage not available');
+    return null;
+  }
+
   try {
     const result = await chrome.storage.local.get([key]);
     return result[key] || null;
@@ -40,6 +60,11 @@ export async function getItem<T>(key: string): Promise<T | null> {
  * Set an item in Chrome storage
  */
 export async function setItem<T>(key: string, value: T): Promise<boolean> {
+  if (!isStorageAvailable()) {
+    console.warn('Chrome storage not available');
+    return false;
+  }
+
   try {
     await chrome.storage.local.set({ [key]: value });
     return true;
