@@ -47,6 +47,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       await setStorage(STORAGE_KEY_PURCHASES, list);
       sendResponse({ success: true });
     }
+
+    if (message.action === 'getSettings') {
+      const settings = (await getStorage<any>('settings')) || {
+        cooldownSeconds: 30,
+        enableNudges: true,
+        enableScamDetection: true,
+      };
+      sendResponse({ success: true, settings });
+    }
   })().catch(err => {
     console.error('SpendGuard background error:', err);
     sendResponse({ success: false, error: err.message });

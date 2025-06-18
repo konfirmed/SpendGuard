@@ -222,14 +222,14 @@ export function extractPurchaseContext(): PurchaseContext {
   return {
     url: window.location.href,
     pageTitle: document.title,
-    productName,
-    price: priceInfo.price,
-    priceText: priceInfo.priceText,
-    currency: priceInfo.currency,
+    productName: productName || undefined,
+    price: priceInfo.price || undefined,
+    priceText: priceInfo.priceText || undefined,
+    currency: priceInfo.currency || undefined,
     category,
     platform,
-    imageUrl,
-    description
+    imageUrl: imageUrl || undefined,
+    description: description || undefined
   };
 }
 
