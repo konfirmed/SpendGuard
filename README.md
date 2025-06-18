@@ -145,10 +145,11 @@ src/
 - 🧠 AI-powered nudges using Chrome's built-in capabilities
 
 ### 🔧 Supported Platforms
-- **Generic Detection**: Smart button recognition across all sites
+- **Generic Detection**: Smart button recognition across e-commerce sites only
 - **Major Platforms**: Stripe, Shopify, Amazon, PayPal, eBay, Etsy
 - **E-commerce Frameworks**: WooCommerce, BigCommerce, Squarespace
-- **Adaptive**: Continuously learns new checkout patterns
+- **Smart Exclusions**: Automatically skips GitHub, GitLab, social media, and development platforms
+- **Adaptive**: Continuously learns new checkout patterns while avoiding false positives
 
 ---
 

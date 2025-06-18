@@ -40,12 +40,16 @@ class LightweightInterceptor {
   }
 
   private scanForCheckoutButtons() {
-    // Simplified but effective checkout button detection
+    // Skip scanning on excluded sites
+    if (this.isExcludedSite()) {
+      return;
+    }
+    
+    // More targeted checkout button detection
     const buttonSelectors = [
-      'button[type="submit"]',
-      'input[type="submit"]',
+      // E-commerce specific selectors
       '.checkout-button',
-      '.buy-button',
+      '.buy-button', 
       '.purchase-button',
       '.add-to-cart',
       '.cart-button',
@@ -53,13 +57,16 @@ class LightweightInterceptor {
       '[data-testid*="checkout"]',
       '[data-testid*="buy"]',
       '[data-testid*="purchase"]',
-      '[data-testid*="cart"]',
-      // Platform-specific common selectors
+      '[data-testid*="add-to-cart"]',
+      // Platform-specific selectors
       '.single_add_to_cart_button', // WooCommerce
       '#buy-now-button', // Amazon
       '.shopify-payment-button', // Shopify
       '.SubmitButton', // Stripe
-      '.paypal-button' // PayPal
+      '.paypal-button', // PayPal
+      // Generic but filtered selectors
+      'button[type="submit"]',
+      'input[type="submit"]'
     ];
 
     const buttons = document.querySelectorAll(buttonSelectors.join(','));
@@ -73,26 +80,91 @@ class LightweightInterceptor {
   }
 
   private isPurchaseButton(element: Element): boolean {
+    // Skip if we're on GitHub, GitLab, or other development platforms
+    if (this.isExcludedSite()) {
+      return false;
+    }
+    
     const text = (element.textContent || '').toLowerCase();
     const ariaLabel = element.getAttribute('aria-label')?.toLowerCase() || '';
     const className = element.className.toLowerCase();
+    const id = element.id.toLowerCase();
     
     const purchaseKeywords = [
       'buy', 'purchase', 'checkout', 'order', 'pay', 'complete',
-      'add to cart', 'proceed', 'continue', 'place order', 'submit'
+      'add to cart', 'proceed', 'continue', 'place order', 'submit order'
     ];
     
-    const excludeKeywords = ['cancel', 'back', 'return', 'edit', 'remove'];
+    const excludeKeywords = [
+      'cancel', 'back', 'return', 'edit', 'remove', 'delete',
+      'merge', 'commit', 'push', 'pull', 'fork', 'clone',
+      'create', 'new', 'save', 'update', 'submit pull', 'submit issue'
+    ];
     
     const hasKeyword = purchaseKeywords.some(keyword => 
       text.includes(keyword) || ariaLabel.includes(keyword) || className.includes(keyword)
     );
     
     const hasExclude = excludeKeywords.some(keyword =>
-      text.includes(keyword) || ariaLabel.includes(keyword)
+      text.includes(keyword) || ariaLabel.includes(keyword) || className.includes(keyword) || id.includes(keyword)
     );
     
-    return hasKeyword && !hasExclude;
+    // Additional check: must be on a likely e-commerce domain or page
+    const isLikelyEcommerce = this.isLikelyEcommercePage();
+    
+    return hasKeyword && !hasExclude && isLikelyEcommerce;
+  }
+
+  private isExcludedSite(): boolean {
+    const hostname = window.location.hostname.toLowerCase();
+    const excludedDomains = [
+      'github.com',
+      'gitlab.com',
+      'bitbucket.org',
+      'stackoverflow.com',
+      'stackexchange.com',
+      'reddit.com',
+      'twitter.com',
+      'x.com',
+      'facebook.com',
+      'instagram.com',
+      'linkedin.com',
+      'youtube.com',
+      'google.com',
+      'microsoft.com',
+      'apple.com',
+      'developer.mozilla.org',
+      'docs.google.com',
+      'notion.so',
+      'slack.com',
+      'discord.com',
+      'zoom.us'
+    ];
+    
+    return excludedDomains.some(domain => hostname.includes(domain));
+  }
+
+  private isLikelyEcommercePage(): boolean {
+    const url = window.location.href.toLowerCase();
+    const hostname = window.location.hostname.toLowerCase();
+    
+    // Known e-commerce indicators
+    const ecommerceIndicators = [
+      '/checkout', '/cart', '/buy', '/purchase', '/order', '/payment',
+      'shop', 'store', 'market', 'commerce', 'retail'
+    ];
+    
+    const hasEcommerceIndicator = ecommerceIndicators.some(indicator =>
+      url.includes(indicator) || hostname.includes(indicator)
+    );
+    
+    // Check for price elements on page (strong indicator of e-commerce)
+    const hasPriceElements = document.querySelector('.price, .product-price, .amount, [data-price]') !== null;
+    
+    // Check for shopping cart elements
+    const hasCartElements = document.querySelector('.cart, .shopping-cart, .basket') !== null;
+    
+    return hasEcommerceIndicator || hasPriceElements || hasCartElements;
   }
 
   private addInterception(button: HTMLElement) {
