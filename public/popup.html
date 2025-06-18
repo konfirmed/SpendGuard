@@ -6,20 +6,45 @@
     <title>SpendGuard</title>
     <style>
         body {
-            width: 400px;
+            width: 380px;
             height: 600px;
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f9fafb;
         }
         #root {
             width: 100%;
             height: 100%;
         }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            flex-direction: column;
+        }
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 1rem; color: #6b7280;">Loading SpendGuard...</p>
+        </div>
+    </div>
     <script src="popup.js"></script>
 </body>
 </html>

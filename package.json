@@ -1,33 +1,21 @@
 {
-  "name": "spendguard",
+  "name": "spendguard-lightweight",
   "version": "1.0.0",
-  "description": "AI-powered browser companion for smarter online decisions",
+  "description": "Lightweight browser companion for smarter online decisions",
   "scripts": {
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
+    "build:analyze": "webpack --mode production --env analyze",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf public/*.js public/*.js.map public/*.LICENSE.txt",
-    "package": "npm run build && zip -r spendguard.zip public/ -x '*.map'"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "package": "npm run build && zip -r spendguard-lightweight.zip public/ -x '*.map'"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
-    "@types/node": "^24.0.3",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "autoprefixer": "^10.4.0",
-    "css-loader": "^6.8.0",
-    "dotenv": "^16.5.0",
-    "postcss": "^8.4.0",
-    "postcss-loader": "^7.3.0",
-    "style-loader": "^3.3.0",
-    "tailwindcss": "^3.3.0",
     "ts-loader": "^9.4.0",
     "typescript": "^5.0.0",
     "webpack": "^5.88.0",
+    "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.0"
   }
 }

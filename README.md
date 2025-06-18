@@ -1,27 +1,34 @@
-# SpendGuard 🛡️🧾
+# SpendGuard 🛡️💡
 
-**SpendGuard** is a browser-based AI companion that helps you make smarter, more intentional decisions online—especially around spending. It sits quietly in your browser and intervenes at the point of decision, helping reduce regret, impulse buys, and poor financial timing.
+**SpendGuard** is a lightweight browser companion that helps you make smarter, more intentional online purchase decisions. It adds intelligent friction at the moment of checkout, helping reduce impulse buys and promote mindful spending.
+
+## ⚡ Performance First - 98% Smaller!
+
+- **~25KB total** bundle size (vs ~1.4MB typical React extensions)
+- **Zero framework dependencies** - pure TypeScript
+- **Lightning fast** loading and execution
+- **Ultra-lightweight** yet fully functional
 
 ---
 
 ## 🔍 What It Does
 
-- ⏳ **Cooldown Before Checkout**: Adds a thoughtful delay before purchases with gentle nudges.
-- 🧠 **Smart Purchase Journal**: Tracks why you buy, helping identify patterns of satisfaction or regret.
-- 📉 **Spending Insights**: Shows you monthly spend by category based on online behavior.
-- 🔔 **Contextual Reminders**: “You returned this item last time” or “This exceeds your spending cap.”
-- 🛡 **Scam Detection**: Warns about potentially risky websites or stores.
-- 🛒 **Price History + Alternatives**: Get pricing trends and cheaper options before you commit.
+- ⏳ **Cooldown Before Checkout**: Adds a thoughtful pause (5s-5min) before purchases
+- 📊 **Purchase Tracking**: Monitors your shopping activity and intercept statistics  
+- 🎛️ **Configurable Settings**: Customize cooldown duration and toggle features
+- 🛡️ **Smart Detection**: Automatically detects checkout flows across major platforms
+- 🧠 **AI-Powered Nudges**: Optional intelligent insights using Chrome's built-in AI
+- 🔒 **Privacy-First**: All data stored locally on your device, no external requests
 
 ---
 
-## 🧑‍💻 Tech Stack
+## 🧑‍💻 Lightweight Tech Stack
 
-- **Frontend**: React (Chrome Extension, Manifest V3)
-- **Styling**: Tailwind CSS, Shadow DOM
-- **AI Layer**: OpenAI GPT-4-turbo (decision reasoning, nudges)
-- **Storage**: IndexedDB / Chrome Storage API (local-first)
-- **Data Sources**: CamelCamelCamel, Yahoo Finance, TrustPilot, Google Safe Browsing
+- **Frontend**: Vanilla TypeScript (Chrome Extension, Manifest V3)
+- **Bundle Size**: ~25KB total (content: 8KB, popup: 16KB, background: 1KB)
+- **AI Layer**: Chrome's built-in AI APIs with intelligent fallbacks
+- **Storage**: Chrome Storage API (local-first)
+- **Build**: Webpack with TypeScript, minimal dependencies
 
 ---
 
@@ -30,7 +37,6 @@
 ### Prerequisites
 - Node.js 16+
 - Chrome browser
-- (Optional) OpenAI API key for AI-powered nudges
 
 ### Installation
 
@@ -45,18 +51,12 @@
    npm install
    ```
 
-3. **Set up environment variables (optional)**
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local and add your OpenAI API key
-   ```
-
-4. **Build the extension**
+3. **Build the extension**
    ```bash
    npm run build
    ```
 
-5. **Load in Chrome**
+4. **Load in Chrome**
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" (toggle in top right)
    - Click "Load unpacked" and select the `public` folder
@@ -73,107 +73,131 @@ npm run type-check
 
 # Production build
 npm run build
+
+# Bundle size analysis
+npm run build:analyze
 ```
 
 ---
 
 ## 🏗️ Architecture
 
-### File Structure
+### File Structure (Lightweight)
 ```
 src/
-├── background/         # Chrome extension background script
-├── content/           # Content script for intercepting checkouts
-├── components/        # React components (CooldownTimer, etc.)
-├── popup/            # Extension popup UI
-├── utils/            # Utilities (storage, GPT client)
-└── types/            # TypeScript type definitions
+├── background/         # Service worker (~1KB)
+├── content/           # Purchase interception (~8KB)
+├── popup/            # Settings UI (~16KB)
+├── types/            # TypeScript definitions
+└── utils/            # Chrome AI utilities
 ```
 
 ### Key Components
 
-1. **Content Script** (`src/content/intercept.tsx`)
-   - Detects checkout pages (Stripe, Shopify, Amazon, etc.)
-   - Intercepts purchase buttons
-   - Shows cooldown timer before allowing checkout
+1. **Content Script** (`src/content/lightweight-intercept.ts`)
+   - Detects checkout buttons across major e-commerce platforms
+   - Lightweight mutation observer for dynamic content
+   - Minimal purchase context extraction
 
-2. **Cooldown Timer** (`src/components/CooldownTimer.tsx`)
-   - Full-screen modal with countdown
-   - Reflection questions
-   - "Proceed Anyway" option after minimum wait
+2. **Cooldown Modal** (Inline in content script)
+   - Clean, accessible countdown interface
+   - Reflection prompts to encourage thoughtful decisions
+   - "Proceed" option after minimum wait time
 
-3. **Storage Utilities** (`src/utils/storage.ts`)
-   - Chrome storage API wrapper
-   - Purchase tracking
-   - Settings management
+3. **Popup Interface** (`src/popup/lightweight-popup.ts`)
+   - Purchase statistics and recent activity
+   - Settings configuration (cooldown duration, toggles)
+   - Vanilla TypeScript with inline styles
 
-4. **GPT Client** (`src/utils/gptClient.ts`)
-   - OpenAI API integration
-   - Context-aware purchase nudges
-   - Fallback to generic messages
+4. **Background Service Worker** (`src/background/index.ts`)
+   - Minimal message handling between content and popup
+   - Storage management and data persistence
+   - Extension lifecycle management
 
-5. **Popup Interface** (`src/popup/Popup.tsx`)
-   - Purchase statistics
-   - Recent purchase history
-   - Settings configuration
+5. **Chrome AI Integration** (`src/utils/gptClient.ts`)
+   - Uses Chrome's built-in AI when available
+   - Intelligent fallbacks to generic nudges
+   - Context-aware purchase insights
+
+---
+
+## 📊 Bundle Analysis
+
+| Component | Size | Purpose |
+|-----------|------|---------|
+| **content.js** | 8.29 KB | Purchase interception & cooldown UI |
+| **popup.js** | 15.8 KB | Settings interface & statistics |
+| **background.js** | 984 bytes | Message handling & storage |
+| **Total** | **~25 KB** | **Complete extension** |
+
+**98.2% smaller** than typical React-based extensions!
 
 ---
 
 ## 🎯 Features
 
 ### ✅ Currently Implemented
-- ⏳ Cooldown timers on checkout pages
-- 📊 Purchase tracking and statistics
-- 🔧 Configurable settings (cooldown duration, enable/disable features)
-- 🎨 Modern UI with Tailwind CSS
+- ⏳ Configurable cooldown timers (5 seconds to 5 minutes)
+- 📊 Purchase tracking and interception statistics
+- 🔧 Clean settings interface with toggles
+- 🎨 Accessible UI with system fonts and semantic HTML
 - 🔒 Privacy-focused (all data stored locally)
-- 🧠 AI-powered nudges (with OpenAI API key)
+- 🧠 AI-powered nudges using Chrome's built-in capabilities
 
 ### 🔧 Supported Platforms
-- Stripe checkout pages
-- Shopify stores
-- Amazon
-- PayPal
-- Generic checkout detection
+- **Generic Detection**: Smart button recognition across all sites
+- **Major Platforms**: Stripe, Shopify, Amazon, PayPal, eBay, Etsy
+- **E-commerce Frameworks**: WooCommerce, BigCommerce, Squarespace
+- **Adaptive**: Continuously learns new checkout patterns
 
 ---
 
 ## 💡 Philosophy
 
-> “We don’t need more dashboards. We need intelligent friction at the moment of choice.”
+> "We don't need heavy frameworks. We need intelligent friction at the moment of choice."
 
-SpendGuard doesn't block you. It helps you reflect, pause, and proceed with clarity—acting as a trusted guide for your browser life.
-
----
-
-## 🧪 Roadmap
-
-### Phase 1: Core Features ✅
-- [x] MVP extension build
-- [x] Smart intercept engine  
-- [x] Purchase tracking and statistics
-- [x] Configurable cooldown timers
-
-### Phase 2: Enhanced Intelligence 🚧
-- [ ] Advanced scam detection
-- [ ] Price comparison integration
-- [ ] Purchase pattern analysis
-- [ ] Regret prediction model
-
-### Phase 3: Personalization 🔮
-- [ ] Machine learning for personal spending patterns
-- [ ] Budget integration
-- [ ] Category-based insights
-- [ ] Social features (anonymous spending comparison)
+SpendGuard provides a gentle pause that helps you reflect before purchases, promoting mindful spending without being intrusive or resource-heavy.
 
 ---
 
 ## 🛡️ Privacy & Security
 
 - **Local-first**: All data stored locally in Chrome storage
-- **No tracking**: SpendGuard doesn't track your browsing
-- **Optional AI**: GPT features require explicit API key configuration
+- **No tracking**: SpendGuard doesn't track your browsing habits
+- **No external requests**: Everything runs locally in your browser
+- **Optional AI**: Uses Chrome's built-in AI APIs only when available
 - **Open source**: Full transparency in code and data handling
+
+---
+
+## 🧪 Performance Benefits
+
+### Before (React + Tailwind):
+- popup.js: 744 KB
+- content.js: 686 KB  
+- Total: ~1.4 MB
+
+### After (Lightweight):
+- popup.js: 15.8 KB
+- content.js: 8.29 KB
+- Total: ~25 KB
+
+### Benefits:
+- **Faster loading**: No framework overhead
+- **Lower memory usage**: Minimal runtime footprint
+- **Better UX**: Instant responsiveness  
+- **Simpler maintenance**: Pure TypeScript, no build complexity
+
+---
+
+## 🛠️ Customization
+
+The extension uses inline styles and vanilla TypeScript for maximum performance:
+
+- **Cooldown styling**: Modify `showCooldown()` in `lightweight-intercept.ts`
+- **Popup appearance**: Update `render()` methods in `lightweight-popup.ts` 
+- **Detection rules**: Adjust selectors in checkout button detection
+- **Timing**: Configure default cooldown values in settings
 
 ---
 
@@ -185,6 +209,12 @@ SpendGuard doesn't block you. It helps you reflect, pause, and proceed with clar
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+### Development Guidelines:
+- Keep bundle size minimal - avoid adding new dependencies
+- Use vanilla TypeScript over frameworks
+- Inline styles instead of external CSS
+- Test across major e-commerce platforms
+
 ---
 
 ## 📄 License
@@ -195,21 +225,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- OpenAI for GPT API
-- Chrome Extensions team for Manifest V3
-- React and TypeScript communities
-- Tailwind CSS for beautiful styling
-
+- Chrome Extensions team for Manifest V3 and built-in AI APIs
+- TypeScript community for excellent tooling
+- E-commerce platforms for consistent checkout patterns
 
 ---
 
 ## 🙌 Contributors
 
 Built by [Kanmi Obasa](https://kanmi.knfrmd.dev)  
-Contributions welcome. Stay decisive.
+Contributions welcome. Stay lightweight, stay decisive.
 
 ---
 
-## 🛡️ License
-
-[MIT](./LICENSE)
+*SpendGuard: Helping you pause and reflect before online purchases, one lightweight interaction at a time.*
