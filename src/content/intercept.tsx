@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import CooldownTimer from '../components/CooldownTimer';
 import { addPurchase, incrementIntercepts, getSettings } from '../utils/storage';
+import { extractPurchaseContext, analyzePriceLevel } from '../utils/priceAnalysis';
 
 /**
  * Content script for intercepting checkout flows
@@ -14,7 +15,7 @@ interface CheckoutDetector {
   getCheckoutButtons: () => NodeListOf<Element> | Element[];
 }
 
-// Common checkout page detectors
+// Enhanced checkout page detectors with more platforms
 const CHECKOUT_DETECTORS: CheckoutDetector[] = [
   {
     name: 'Stripe',
@@ -26,20 +27,56 @@ const CHECKOUT_DETECTORS: CheckoutDetector[] = [
   {
     name: 'Shopify',
     detect: () => document.querySelector('[name="add"], .btn--checkout, #checkout_submit') !== null ||
-                  window.location.href.includes('/checkout'),
-    getCheckoutButtons: () => document.querySelectorAll('[name="add"], .btn--checkout, #checkout_submit, [data-testid="Checkout-button"]')
+                  window.location.href.includes('/checkout') ||
+                  document.querySelector('.shopify-payment-button') !== null,
+    getCheckoutButtons: () => document.querySelectorAll('[name="add"], .btn--checkout, #checkout_submit, [data-testid="Checkout-button"], .shopify-payment-button')
   },
   {
     name: 'Amazon',
     detect: () => document.querySelector('#buy-now-button, #add-to-cart-button, .a-button-oneclick') !== null ||
                   window.location.href.includes('amazon.com'),
-    getCheckoutButtons: () => document.querySelectorAll('#buy-now-button, #add-to-cart-button, .a-button-oneclick, [name="submit.buy-now"]')
+    getCheckoutButtons: () => document.querySelectorAll('#buy-now-button, #add-to-cart-button, .a-button-oneclick, [name="submit.buy-now"], #attach-sims-purchase-button')
+  },
+  {
+    name: 'WooCommerce',
+    detect: () => document.querySelector('.woocommerce-checkout, .single_add_to_cart_button, .checkout-button') !== null ||
+                  document.body.classList.contains('woocommerce'),
+    getCheckoutButtons: () => document.querySelectorAll('.single_add_to_cart_button, .checkout-button, .wc-proceed-to-checkout, #place_order')
+  },
+  {
+    name: 'Magento',
+    detect: () => document.querySelector('#product-addtocart-button, .btn-cart, .action.primary.checkout') !== null ||
+                  window.location.href.includes('/checkout'),
+    getCheckoutButtons: () => document.querySelectorAll('#product-addtocart-button, .btn-cart, .action.primary.checkout')
+  },
+  {
+    name: 'BigCommerce',
+    detect: () => document.querySelector('[data-button-type="add-cart"], .button--primary.add-to-cart') !== null,
+    getCheckoutButtons: () => document.querySelectorAll('[data-button-type="add-cart"], .button--primary.add-to-cart, .checkout-button')
+  },
+  {
+    name: 'Squarespace',
+    detect: () => document.querySelector('.sqs-add-to-cart-button, .checkout-button') !== null ||
+                  window.location.href.includes('squarespace.com'),
+    getCheckoutButtons: () => document.querySelectorAll('.sqs-add-to-cart-button, .checkout-button, .continue-button')
+  },
+  {
+    name: 'Etsy',
+    detect: () => document.querySelector('[data-test-id="add-to-cart-button"], .btn-cart') !== null ||
+                  window.location.href.includes('etsy.com'),
+    getCheckoutButtons: () => document.querySelectorAll('[data-test-id="add-to-cart-button"], .btn-cart, .proceed-to-checkout')
+  },
+  {
+    name: 'eBay',
+    detect: () => document.querySelector('#binBtn_btn, #buyItNowBtn, .notranslate') !== null ||
+                  window.location.href.includes('ebay.com'),
+    getCheckoutButtons: () => document.querySelectorAll('#binBtn_btn, #buyItNowBtn, .notranslate[id*="buy"]')
   },
   {
     name: 'PayPal',
     detect: () => document.querySelector('[data-funding-source="paypal"], .paypal-button') !== null ||
                   window.location.href.includes('paypal.com'),
-    getCheckoutButtons: () => document.querySelectorAll('[data-funding-source="paypal"], .paypal-button, #payment-submit-btn')
+    getCheckoutButtons: () => document.querySelectorAll('[data-funding-source="paypal"], .paypal-button, #payment-submit-btn, .continueButton')
   },
   {
     name: 'Generic',
@@ -52,9 +89,12 @@ const CHECKOUT_DETECTORS: CheckoutDetector[] = [
         '.buy-button',
         '.purchase-button',
         '.order-button',
+        '.add-to-cart',
+        '.cart-button',
         '[data-testid*="checkout"]',
         '[data-testid*="buy"]',
-        '[data-testid*="purchase"]'
+        '[data-testid*="purchase"]',
+        '[data-testid*="cart"]'
       ];
       
       const buttons: Element[] = [];
@@ -62,8 +102,15 @@ const CHECKOUT_DETECTORS: CheckoutDetector[] = [
         const elements = document.querySelectorAll(selector);
         elements.forEach(el => {
           const text = el.textContent?.toLowerCase() || '';
-          if (text.includes('buy') || text.includes('purchase') || text.includes('checkout') || 
-              text.includes('order') || text.includes('pay') || text.includes('complete')) {
+          const ariaLabel = el.getAttribute('aria-label')?.toLowerCase() || '';
+          const title = el.getAttribute('title')?.toLowerCase() || '';
+          
+          const purchaseKeywords = ['buy', 'purchase', 'checkout', 'order', 'pay', 'complete', 'add to cart', 'proceed'];
+          const hasKeyword = purchaseKeywords.some(keyword => 
+            text.includes(keyword) || ariaLabel.includes(keyword) || title.includes(keyword)
+          );
+          
+          if (hasKeyword) {
             buttons.push(el);
           }
         });
@@ -142,9 +189,34 @@ class CheckoutInterceptor {
     const interceptClick = async (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
+      
+      // Extract purchase context for enhanced analysis
+      const purchaseContext = extractPurchaseContext();
+      
       await incrementIntercepts();
-      await addPurchase({ url: window.location.href, timestamp: Date.now(), intercepted: true, proceeded: false });
-      this.showCooldown(settings.cooldownSeconds, () => this.proceedWithOriginalAction(button), () => this.proceedWithOriginalAction(button));
+      await addPurchase({ 
+        url: window.location.href, 
+        timestamp: Date.now(), 
+        intercepted: true, 
+        proceeded: false,
+        amount: purchaseContext.price || undefined
+      });
+      
+      // Determine price level for better UI feedback
+      let priceLevel: 'low' | 'medium' | 'high' | 'very-high' | undefined;
+      if (purchaseContext.price && purchaseContext.category) {
+        priceLevel = analyzePriceLevel(purchaseContext.price, purchaseContext.category);
+      }
+
+      this.showCooldown(
+        settings.cooldownSeconds, 
+        () => this.proceedWithOriginalAction(button), 
+        () => this.proceedWithOriginalAction(button),
+        {
+          ...purchaseContext,
+          priceLevel
+        }
+      );
     };
     this.interceptedListeners.set(button, interceptClick);
     button.addEventListener('click', interceptClick, true);
@@ -172,7 +244,8 @@ class CheckoutInterceptor {
   private showCooldown(
     seconds: number,
     onComplete: () => void,
-    onSkip: () => void
+    onSkip: () => void,
+    purchaseContext?: any
   ) {
     // Create container for React component
     this.cooldownContainer = document.createElement('div');
@@ -206,6 +279,7 @@ class CheckoutInterceptor {
     root.render(
       <CooldownTimer
         seconds={seconds}
+        purchaseContext={purchaseContext}
         onComplete={() => {
           this.removeCooldown();
           onComplete();

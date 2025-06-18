@@ -1,10 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
+interface PurchaseContext {
+  productName?: string;
+  price?: number;
+  priceText?: string;
+  currency?: string;
+  category?: string;
+  platform?: string;
+  priceLevel?: 'low' | 'medium' | 'high' | 'very-high';
+}
+
 interface CooldownTimerProps {
   seconds: number;
   onComplete: () => void;
   onSkip: () => void;
   className?: string;
+  purchaseContext?: PurchaseContext;
 }
 
 /**
@@ -15,7 +26,8 @@ const CooldownTimer: React.FC<CooldownTimerProps> = ({
   seconds, 
   onComplete, 
   onSkip, 
-  className = '' 
+  className = '',
+  purchaseContext
 }) => {
   const [timeLeft, setTimeLeft] = useState(Math.max(1, seconds || 30));
   const [canSkip, setCanSkip] = useState(false);
@@ -97,14 +109,57 @@ const CooldownTimer: React.FC<CooldownTimerProps> = ({
           <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div 
               className="bg-blue-600 h-full rounded-full transition-all duration-1000 ease-linear"
-              style={{ width: `${progressPercentage}%` }}
               role="progressbar"
-              aria-valuenow={progressPercentage}
+              aria-label="Cooldown progress"
+              aria-valuenow={Math.round(progressPercentage)}
               aria-valuemin={0}
               aria-valuemax={100}
+              style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
+
+        {/* Purchase Context (if available) */}
+        {purchaseContext && (
+          <div className="text-left space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <p className="text-sm font-medium text-blue-700">Purchase Details:</p>
+            
+            {purchaseContext.productName && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Item:</span> {purchaseContext.productName}
+              </div>
+            )}
+            
+            {purchaseContext.price && (
+              <div className="text-sm text-gray-700 flex items-center justify-between">
+                <span className="font-medium">Price:</span>
+                <span className={`font-bold ${
+                  purchaseContext.priceLevel === 'very-high' ? 'text-red-600' :
+                  purchaseContext.priceLevel === 'high' ? 'text-orange-600' :
+                  purchaseContext.priceLevel === 'medium' ? 'text-yellow-600' :
+                  'text-green-600'
+                }`}>
+                  {purchaseContext.priceText || `${purchaseContext.currency || '$'}${purchaseContext.price}`}
+                  {purchaseContext.priceLevel === 'very-high' && ' 🔥'}
+                  {purchaseContext.priceLevel === 'high' && ' ⚠️'}
+                </span>
+              </div>
+            )}
+            
+            {purchaseContext.category && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Category:</span> 
+                <span className="capitalize ml-1">{purchaseContext.category}</span>
+              </div>
+            )}
+            
+            {purchaseContext.platform && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Platform:</span> {purchaseContext.platform}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Reflection Questions */}
         <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg">
