@@ -4,11 +4,16 @@
   "description": "Lightweight browser companion for smarter online decisions",
   "scripts": {
     "dev": "webpack --mode development --watch",
+    "dev:enhanced": "webpack --config webpack.enhanced.config.js --mode development --watch --env enhanced",
     "build": "webpack --mode production",
+    "build:enhanced": "webpack --config webpack.enhanced.config.js --mode production --env enhanced",
     "build:analyze": "webpack --mode production --env analyze",
+    "build:analyze:enhanced": "webpack --config webpack.enhanced.config.js --mode production --env enhanced --env analyze",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf public/*.js public/*.js.map public/*.LICENSE.txt",
-    "package": "npm run build && zip -r spendguard-lightweight.zip public/ -x '*.map'"
+    "package": "npm run build && zip -r spendguard-lightweight.zip public/ -x '*.map'",
+    "package:enhanced": "npm run build:enhanced && zip -r spendguard-enhanced.zip public/ -x '*.map'",
+    "package:both": "npm run package && npm run package:enhanced"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
